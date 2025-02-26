@@ -82,11 +82,62 @@ public class Password {
      * @return true if the password is strong, false otherwise
      */
     public static boolean isStrongPassword(String password) {
+        // Vérification de la longueur
+        if (password.length() < 12) {
+            return false;
+        }public static boolean isStrongPassword(String password) {
+        // Vérification de la longueur
+        if (password.length() < 12) {
+            return false;
+        }
 
-        // Code here
+        // Vérification des caractères requis
+        boolean hasUppercase = false;
+        boolean hasLowercase = false;
+        boolean hasDigit = false;
+        boolean hasWhitespace = false;
 
-        return false;
+        // Parcours de chaque caractère du mot de passe
+        for (char ch : password.toCharArray()) {
+            if (Character.isUpperCase(ch)) {
+                hasUppercase = true;
+            } else if (Character.isLowerCase(ch)) {
+                hasLowercase = true;
+            } else if (Character.isDigit(ch)) {
+                hasDigit = true;
+            } else if (Character.isWhitespace(ch)) {
+                hasWhitespace = true;
+            }
+        }
+
+        // Vérification finale
+        return hasUppercase && hasLowercase && hasDigit && !hasWhitespace;
     }
+
+
+        // Vérification des caractères requis
+        boolean hasUppercase = false;
+        boolean hasLowercase = false;
+        boolean hasDigit = false;
+        boolean hasWhitespace = false;
+
+        // Parcours de chaque caractère du mot de passe
+        for (char ch : password.toCharArray()) {
+            if (Character.isUpperCase(ch)) {
+                hasUppercase = true;
+            } else if (Character.isLowerCase(ch)) {
+                hasLowercase = true;
+            } else if (Character.isDigit(ch)) {
+                hasDigit = true;
+            } else if (Character.isWhitespace(ch)) {
+                hasWhitespace = true;
+            }
+        }
+
+        // Vérification finale
+        return hasUppercase && hasLowercase && hasDigit && !hasWhitespace;
+    }
+
 
     /**
      * Checks the strength of multiple passwords and stores the results in a
