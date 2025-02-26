@@ -39,8 +39,30 @@ public class Password {
      * @return the 6-digit number that matches, or null if no match is found
      */
     public static String bruteForce6Digit(String targetHash) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
 
-        // Code here
+            // Boucle de 000000 à 999999
+            for (int i = 0; i <= 999999; i++) {
+                // Format en 6 chiffres (ex : 000001, 000002, ... 999999)
+                String candidate = String.format("%06d", i);
+
+                // On génère le hash
+                byte[] hashBytes = md.digest(candidate.getBytes());
+                StringBuilder hashBuilder = new StringBuilder();
+                for (byte b : hashBytes) {
+                    hashBuilder.append(String.format("%02x", b));
+                }
+                String hash = hashBuilder.toString();
+
+                // On compare le hash généré avec le hash cible
+                if (hash.equals(targetHash)) {
+                    return candidate; // On a trouvé le bon nombre !
+                }
+            }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
