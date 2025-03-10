@@ -10,18 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Date;
 
-/**
- * Represents a Library.
- */
 public class Library {
     private String name;
     private List<Item> items;  // Liste des items, qui peuvent être des livres ou des magazines
     private List<Loan> activeLoans;  // Liste des prêts en cours
     private List<Loan> completedLoans;  // Liste des prêts terminés
 
-    /**
-     * Constructs a new Library object.
-     */
     public Library(String name) {
         this.name = name;
         this.items = new ArrayList<>();
@@ -29,16 +23,10 @@ public class Library {
         this.completedLoans = new ArrayList<>();
     }
 
-    /**
-     * Adds an item (book or magazine) to the library collection.
-     */
     public void addItem(Item item) {
         items.add(item);
     }
 
-    /**
-     * Displays all items (books and magazines) in the library.
-     */
     public void displayItems() {
         if (items.isEmpty()) {
             System.out.println("No items available in the library.");
@@ -49,15 +37,8 @@ public class Library {
         }
     }
 
-    /**
-     * Loads items from a CSV file and adds them to the library.
-     * 
-     * @param filePath The path to the CSV file containing item data.
-     */
     public void loadItemsFromCSV(String filePath) {
-        // Récupérer l'URL du fichier CSV à partir du classpath
         URL url = getClass().getClassLoader().getResource(filePath);
-        
         if (url == null) {
             System.out.println("Error: The file could not be found in the classpath.");
             return;
@@ -65,11 +46,10 @@ public class Library {
 
         try (BufferedReader br = new BufferedReader(new FileReader(url.getFile()))) {
             String line;
-            Map<String, Author> authors = new HashMap<>(); // Map pour éviter les doublons d'auteurs
+            Map<String, Author> authors = new HashMap<>();
 
-            // Skip header line if CSV has a header
-            br.readLine(); // To skip the header line if your CSV file contains one
-            
+            br.readLine();  // Skip header if CSV has one
+
             while ((line = br.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length == 5) {
@@ -78,15 +58,12 @@ public class Library {
                     int year = Integer.parseInt(data[3].trim());
                     int pageCount = Integer.parseInt(data[4].trim());
 
-                    // Gestion de l'auteur (vérification et ajout s'il n'existe pas déjà)
                     Author author = authors.get(authorName);
                     if (author == null) {
-                        author = new Author(authorName, 0, "Unknown"); // Age et nationalité inconnus par défaut
+                        author = new Author(authorName, 0, "Unknown");
                         authors.put(authorName, author);
-                        System.out.println("New author added: " + author);
                     }
 
-                    // Création de l'item (livre ou magazine)
                     Item item;
                     if (data[0].trim().equals("Book")) {
                         String isbn = data[0].trim();
@@ -96,12 +73,12 @@ public class Library {
                         int issueNumber = Integer.parseInt(data[4].trim());
                         item = new Magazine(title, issn, issueNumber, year, pageCount);
                     } else {
-                        continue;  // Ignore if type is unknown
+                        continue;
                     }
 
                     addItem(item);
                 } else {
-                    System.out.println("Warning: Skipping invalid line (not enough data fields): " + line);
+                    System.out.println("Warning: Skipping invalid line: " + line);
                 }
             }
             System.out.println("Items successfully loaded from CSV.");
@@ -110,40 +87,67 @@ public class Library {
         }
     }
 
-    /**
-     * Loans an item to a student.
-     */
-    public void loanItem(Student student, Item item) {
-        // Vérifie si l'item est disponible (non prêté)
+    // Trouver un prêt actif pour un item
+    public Loan findActiveLoanForItem(Item item) {
+        for (Loan loan : activeLoans) {
+            if (loan.getItem().equals(item)) {
+                return loan;
+            }
+        }
+        return null;
+    }
+
+    // Obtenir tous les livres d'un auteur
+    public ArrayList<Book> getBooksByAuthor(Author author) {
+        ArrayList<Book> booksByAuthor = new ArrayList<>();
+        for (Item item : items) {
+            if (item instanceof Book && ((Book) item).getAuthor().equals(author)) {
+                booksByAuthor.add((Book) item);
+            }
+        }
+        return booksByAuthor;
+    }
+
+    // Emprunter un item
+    public boolean loanItem(Item item, Student student) {
         if (item != null && !isItemLoaned(item)) {
             Loan loan = new Loan(student, item, new Date());
             activeLoans.add(loan);
             System.out.println("Loan created: " + loan);
+            return true;
         } else {
             System.out.println("Item is already loaned or unavailable.");
+            return false;
         }
     }
 
-    /**
-     * Returns an item and updates the loan status.
-     */
-    public void returnItem(Loan loan) {
-        loan.setReturnDate(new Date());  // Met à jour la date de retour
-        activeLoans.remove(loan);  // Retire le prêt de la liste des prêts actifs
-        completedLoans.add(loan);  // Ajoute le prêt à la liste des prêts terminés
-        System.out.println("Item returned: " + loan);
-    }
-
-    /**
-     * Checks if an item is already loaned out.
-     */
-    public boolean isItemLoaned(Item item) {
-        for (Loan loan : activeLoans) {
-            if (loan.toString().contains(item.getDetails())) {
-                return true;
-            }
+    // Retourner un item
+    public boolean renderItem(Item item) {
+        Loan loan = findActiveLoanForItem(item);
+        if (loan != null) {
+            loan.setReturnDate(new Date());
+            activeLoans.remove(loan);
+            completedLoans.add(loan);
+            System.out.println("Item returned: " + loan);
+            return true;
         }
         return false;
+    }
+
+    // Afficher les prêts actifs
+    public void displayActiveLoans() {
+        if (activeLoans.isEmpty()) {
+            System.out.println("No active loans.");
+        } else {
+            for (Loan loan : activeLoans) {
+                System.out.println(loan);
+            }
+        }
+    }
+
+    // Vérifier si un item est déjà prêté
+    private boolean isItemLoaned(Item item) {
+        return findActiveLoanForItem(item) != null;
     }
 
     public List<Loan> getActiveLoans() {

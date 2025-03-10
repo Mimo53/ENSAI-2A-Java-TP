@@ -23,10 +23,24 @@ public class Loan {
     }
 
     /**
+     * Gets the item that was loaned.
+     */
+    public Item getItem() {
+        return item;
+    }
+
+    /**
      * Sets the return date for the loan.
      */
     public void setReturnDate(Date returnDate) {
         this.returnDate = returnDate;
+    }
+
+    /**
+     * Gets the return date of the loan.
+     */
+    public Date getReturnDate() {
+        return returnDate;
     }
 
     @Override
